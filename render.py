@@ -15,8 +15,9 @@ project.read("project.qgz")
 # layout = QgsProject.instance().layoutManager().layoutByName("Layout_1")
 # exporter = QgsLayoutExporter(layout)
 
-# layers = list(project.mapLayers().values())
-# print(layers)
+
+layers = list(project.mapLayers().values())
+print(layers)
 
 layer_names = [ 
     "incidents_EPSG_31491", 
