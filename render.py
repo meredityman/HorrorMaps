@@ -1,8 +1,36 @@
-import os
-from qgis.core import *
-from PyQt5 import *
-from PyQt5.QtSvg import *
-from PyQt5.Qt import *
+import sys
+import math
+import time
+import signal
+
+from qgis.PyQt.QtGui import (
+    QColor,
+)
+
+from qgis.PyQt.QtCore import Qt, QRectF, QTimer
+
+from qgis.core import (
+    QgsVectorLayer,
+    QgsPoint,
+    QgsPointXY,
+    QgsProject,
+    QgsGeometry,
+    QgsMapRendererJob,
+    QgsApplication
+)
+
+from qgis.gui import (
+    QgsMapCanvas,
+    QgsVertexMarker,
+    QgsMapCanvasItem,
+    QgsRubberBand,
+    QgsMapToolIdentifyFeature
+)
+
+
+INCIDENTS_LAYER = "incidents_EPSG_31491"
+ADMIN_LAYER     = "DEU_adm3_EPSG_31491"
+ELEVATION_LAYER = "DEU_msk_alt_ESPG_31491"
 
 app = QgsApplication([], True) 
 app.setPrefixPath("/usr/bin/qgis", True) 
@@ -11,53 +39,54 @@ app.initQgis()
 project = QgsProject.instance() 
 project.read("project.qgz")
 
+incidents_layer = project.mapLayersByName(INCIDENTS_LAYER)[0]
+admin_layer     = project.mapLayersByName(ADMIN_LAYER)[0]
+elevation_layer = project.mapLayersByName(ELEVATION_LAYER)[0]
 
-# layout = QgsProject.instance().layoutManager().layoutByName("Layout_1")
-# exporter = QgsLayoutExporter(layout)
+canvases = {
+    "display0" : QgsMapCanvas(), 
+    "display1" : QgsMapCanvas()
+}
+canvases_rev = {v: k for k, v in canvases.items()}
 
+def tick(canvas):
+    name = canvases_rev[canvas]
 
-layers = list(project.mapLayers().values())
-print(layers)
-
-layer_names = [ 
-    "incidents_EPSG_31491", 
-    "DEU_adm3_EPSG_31491", 
-    "DEU_msk_alt_ESPG_31491"
-]
-layers = [ project.mapLayersByName(name)[0] for name in layer_names]
-#layers = list(project.mapLayers().values())
-
-# for layer in layers:
-#     layer.setCrs(QgsCoordinateReferenceSystem('EPSG:31491'))
-
-
-options = QgsMapSettings()
-
-options.setLayers(layers)
-options.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:31491'))
-
-print(layers[2].crs())
+    if name == "display0":
+        mag = 1.2 + 0.2 * math.sin(time.time())
+    elif name == "display1":
+        mag = 4.0 + 0.2 * math.sin(time.time())
+    else:
+        mag = 1.0
 
 
-#options.setDestinationCrs(layers[0].crs())
-
-options.setBackgroundColor(QColor(0, 0, 0))
-options.setOutputSize(QSize(1920, 1024))
-
-options.setExtent(layers[0].extent())
+    canvas.setMagnificationFactor(mag)
+    canvas.refresh()
 
 
+for name, canvas in canvases.items():
+    canvas.setGeometry(0, 0, 1920, 1024)
+    canvas.setCanvasColor(Qt.black)
+    canvas.enableAntiAliasing(True)
 
-print(options.destinationCrs())
+    canvas.setLayers([
+        incidents_layer,
+        admin_layer,     
+        elevation_layer 
+    ])
 
-render = QgsMapRendererParallelJob(options)
-image_location = "renders/render.png"
+    canvas.setExtent(incidents_layer.extent())    
 
-def finished():
-    img = render.renderedImage()
-    img.save(image_location, "png")
-    print("saved")
+    canvas.mapCanvasRefreshed.connect(lambda canvas=canvas: tick(canvas))  
+    canvas.show()
 
-render.finished.connect(finished)
-render.start()
-render.waitForFinished()
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+# timer = QTimer()
+# timer.timeout.connect(tick)
+# timer.start(1/12)
+
+# while(True):
+
+
+sys.exit(app.exec_())
