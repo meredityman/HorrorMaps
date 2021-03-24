@@ -64,7 +64,7 @@ class HorrorCanvas(QgsMapCanvas):
     def _update(self):
         self.t0 = time.time()
 
-        self.dtime = self.t0 - self.t1
+        self.dtime = min(1.0, self.t0 - self.t1)
         self.framerate = 1.0 / max(self.dtime, 0.000001)
         self.setWindowTitle(f"[{self.name}] | FPS: {self.framerate:04f}")
 
@@ -79,12 +79,12 @@ class MapCanvasInspector(HorrorCanvas):
 
     max_scale_factor = 20.0
 
-    idle_time            = 7.0
+    idle_time            = 1.0
     focus_idle_time      = 7.0
 
-    moving_to_point_target_scale = 800000
+    moving_to_point_target_scale = 800000000
 
-    scale_step = 10
+    scale_step = 1.07
     pan_step   = 3000
 
     modes = [
@@ -124,13 +124,48 @@ class MapCanvasInspector(HorrorCanvas):
         self.set_pio(point)
 
 
+    def pan_to(self, point):
+        vec = (point - self.center())
+        if(vec.length() > self.pan_step ):
+            vec = vec.normalized() * self.pan_step
+            center = self.center() + vec
+            self.setCenter(center)
+
+            return False
+        else:
+            self.setCenter(point)
+            return True
+
+
+    def scale_up(self, target_scale):
+        curScale = self.scale()
+        print(curScale, target_scale, curScale  > target_scale)
+        if(curScale  > target_scale ):
+            self.zoomByFactor(1.0 - (1 * self.dtime))	
+            return False
+        else: 
+            #self.zoomScale(target_scale, ignoreScaleLock = True )
+            return True
+
+    def scale_down(self, target_scale):
+        curScale = self.scale()
+        print(curScale, target_scale, curScale  < target_scale)
+        if(curScale  < target_scale ):
+            self.zoomByFactor(1.0 + (1 * self.dtime))	
+            return False
+        else: 
+            #self.zoomScale(target_scale, ignoreScaleLock = True)
+            return True
+
     def update(self):
         t = time.time()
         mode = self.mode
 
         if mode == "idle":
             center = self.center()
-            center += getNoiseVector(t) * 3000
+
+            print(self.dtime)
+            center += getNoiseVector(t) * (self.pan_step * self.dtime)
             self.setCenter(center)
 
             if(t - self.last_state_change >= self.idle_time):
@@ -138,20 +173,10 @@ class MapCanvasInspector(HorrorCanvas):
                 self.get_random_poi()
 
         elif mode == "moving-to-point":
-
-            # if(t - self.last_state_change < self.moving_to_point_time):
-            #     vec = (self.pio - self.center()) * 0.5
-            #     center = self.center() + vec
-            #     self.setCenter(center)
-
-            #     scale = 0.5  * (self.scale() + (self.fullScale /  self.max_scale_factor))
-            #     self.zoomScale(scale)
-
-            #     print(self.scale())
-            # else:
-            #     self.setCenter(self.pio)
-            #     self.zoomScale(self.fullScale / self.max_scale_factor)
-            #     self.set_mode("fit-data")
+            p = self.pan_to(self.pio)
+            s = self.scale_up(self.fullScale / 10)
+            if p and s:
+                self.set_mode("fit-data")
 
 
         elif mode == "fit-data":
@@ -163,19 +188,12 @@ class MapCanvasInspector(HorrorCanvas):
                 self.set_mode("moving-to-idle")
 
         elif mode == "moving-to-idle":
-            if(t - self.last_state_change < self.moving_to_idle_time):
-                vec = (self.mapExtents.center() - self.center()) * 0.5
-                center = self.center() + vec
-                self.setCenter(center)
-
-                scale = 0.5  * (self.scale() + self.fullScale )
-                self.zoomScale(scale)
-
-
-                print(self.scale())
-            else:
+            p = self.pan_to(self.mapExtents.center())
+            s = self.scale_down(self.fullScale)
+            if p and s:
                 self.setExtent(self.mapExtents) 
-                self.set_mode("idle")
+                self.set_mode("fit-data")
+
         else:
             print(f"Mode not recognized {mode}")
             pass
