@@ -22,14 +22,14 @@ def main():
     project = QgsProject.instance() 
     project.read("project.qgz")
 
-    display0 = MapCanvasA(project)
-    display0.setGeometry(0, 0, 1920, 1024)       
+    display0 = MapCanvasInspector("display0", project)
+    display0.setGeometry(0, 0, 1920 / 2, 1024 / 2)       
     display0.show()
 
 
-    display1 = MapCanvasB(project)
-    display1.setGeometry(0, 0, 1920, 1024)
-    display1.show()
+    # display1 = MapCanvasInspector("display1", project)
+    # display1.setGeometry(0, 0, 1920, 1024)
+    # display1.show()
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
