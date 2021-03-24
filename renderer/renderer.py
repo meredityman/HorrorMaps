@@ -31,9 +31,12 @@ class HorrorCanvas(QgsMapCanvas):
         self.project = project
 
         self.incidents_layer = project.mapLayersByName(INCIDENTS_LAYER)[0]
+        self.incidents_layer.setLabelsEnabled(False)
+        
         self.admin_layer     = project.mapLayersByName(ADMIN_LAYER)[0]
         self.elevation_layer = project.mapLayersByName(ELEVATION_LAYER)[0]
 
+        self.setMagnificationFactor(1.3)
 
         self.enableAntiAliasing(True)
         self.setCanvasColor(Qt.black)
@@ -66,8 +69,9 @@ class HorrorCanvas(QgsMapCanvas):
         self.framerate = 1.0 / max(self.dtime, 0.000001)
         self.setWindowTitle(f"[{self.name}] | FPS: {self.framerate:04f}")
 
-        self.update()
-        self.refresh()
+        if(self.update()):
+            self.refresh()
+
         self.t1 = time.time()
 
     def update(self):
@@ -77,13 +81,14 @@ class MapCanvasInspector(HorrorCanvas):
 
     max_scale_factor = 20.0
 
-    idle_time            = 1.0
+    idle_time            = 15.0
     focus_idle_time      = 7.0
+    fit_data_time        = 3.0
 
     moving_to_point_target_scale = 800000000
 
     scale_step = 0.000
-    pan_step   = 3000
+    pan_step   = 30000
 
     modes = [
         "idle",
@@ -135,30 +140,6 @@ class MapCanvasInspector(HorrorCanvas):
             return True
 
 
-    def scale_up(self, target_scale):
-        curScale = self.scale()
-        print(curScale, target_scale, curScale  > target_scale)
-        if(curScale  > target_scale ):
-            fac = 1.0 + (self.scale_step * self.dtime)
-            print(fac)
-            self.setScale(fac)
-            return False
-        else: 
-            #self.zoomScale(target_scale, ignoreScaleLock = True )
-            return True
-
-    def scale_down(self, target_scale):
-        curScale = self.scale()
-        print(curScale, target_scale, curScale  < target_scale)
-        if(curScale  < target_scale ):
-            fac = 1.0 - (self.scale_step * self.dtime)
-            print(fac)
-            #self.zoomByFactor(fac)	
-            return False
-        else: 
-            #self.zoomScale(target_scale, ignoreScaleLock = True)
-            return True
-
     def update(self):
         t = time.time()
         mode = self.mode
@@ -166,7 +147,7 @@ class MapCanvasInspector(HorrorCanvas):
         if mode == "idle":
             center = self.center()
 
-            print(self.dtime)
+
             center += getNoiseVector(t) * (self.pan_step * self.dtime)
             self.setCenter(center)
 
@@ -174,29 +155,50 @@ class MapCanvasInspector(HorrorCanvas):
                 print("Idle timed out...")
                 self.get_random_poi()
 
+            return True
         elif mode == "moving-to-point":
-            p = self.pan_to(self.pio)
-            s = self.scale_up(self.fullScale / 10)
-            if p and s:
+            self.setMagnificationFactor(1.5)
+            if self.pan_to(self.pio):
                 self.set_mode("fit-data")
 
+            return True
 
         elif mode == "fit-data":
-            self.set_mode("focus-idle")
+            if(self.magnificationFactor()  != 10.5):
+                self.setMagnificationFactor(10.5)
+                self.incidents_layer.setLabelsEnabled(True)
+
+            else:
+                if(t - self.last_state_change >= self.fit_data_time):
+                    self.set_mode("focus-idle")
+            
+            return True
+
         elif mode == "focus-idle":
+
+
             if(t - self.last_state_change < self.focus_idle_time):
-                pass
+                if(self.magnificationFactor()  != 300.5):
+                    self.setMagnificationFactor(300.5)
+                    self.incidents_layer.setLabelsEnabled(True)
+                    return True
+                else:
+                    return False
             else:
                 self.set_mode("moving-to-idle")
+                return True
+
 
         elif mode == "moving-to-idle":
-            p = self.pan_to(self.mapExtents.center())
-            s = self.scale_down(self.fullScale)
-            if p and s:
-                self.setExtent(self.mapExtents) 
-                self.set_mode("fit-data")
+            self.incidents_layer.setLabelsEnabled(False)
+            self.setMagnificationFactor(2.5)
 
+            if self.pan_to(self.mapExtents.center()):
+                self.setExtent(self.mapExtents) 
+                self.set_mode("idle")
+
+            return True
         else:
             print(f"Mode not recognized {mode}")
-            pass
+            return False
         
