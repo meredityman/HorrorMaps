@@ -35,11 +35,9 @@ class HorrorCanvas(QgsMapCanvas):
         self.elevation_layer = project.mapLayersByName(ELEVATION_LAYER)[0]
 
 
-
         self.enableAntiAliasing(True)
         self.setCanvasColor(Qt.black)
         self.setScaleLocked(False)
-
 
         self.setLayers([
             self.incidents_layer,
@@ -84,7 +82,7 @@ class MapCanvasInspector(HorrorCanvas):
 
     moving_to_point_target_scale = 800000000
 
-    scale_step = 1.07
+    scale_step = 0.000
     pan_step   = 3000
 
     modes = [
@@ -141,7 +139,9 @@ class MapCanvasInspector(HorrorCanvas):
         curScale = self.scale()
         print(curScale, target_scale, curScale  > target_scale)
         if(curScale  > target_scale ):
-            self.zoomByFactor(1.0 - (1 * self.dtime))	
+            fac = 1.0 + (self.scale_step * self.dtime)
+            print(fac)
+            self.setScale(fac)
             return False
         else: 
             #self.zoomScale(target_scale, ignoreScaleLock = True )
@@ -151,7 +151,9 @@ class MapCanvasInspector(HorrorCanvas):
         curScale = self.scale()
         print(curScale, target_scale, curScale  < target_scale)
         if(curScale  < target_scale ):
-            self.zoomByFactor(1.0 + (1 * self.dtime))	
+            fac = 1.0 - (self.scale_step * self.dtime)
+            print(fac)
+            #self.zoomByFactor(fac)	
             return False
         else: 
             #self.zoomScale(target_scale, ignoreScaleLock = True)
