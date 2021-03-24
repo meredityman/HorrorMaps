@@ -23,7 +23,8 @@ def main():
     project.read("project.qgz")
 
     display0 = MapCanvasInspector("display0", project)
-    display0.setGeometry(0, 0, 1920 / 2, 1024 / 2)       
+    #display0.setGeometry(0, 0, 1920 / 2, 1024 / 2) 
+    display0.showFullScreen()
     display0.show()
 
 

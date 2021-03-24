@@ -41,10 +41,11 @@ class HorrorCanvas(QgsMapCanvas):
         self.enableAntiAliasing(True)
         self.setCanvasColor(Qt.black)
         self.setScaleLocked(False)
+        self.setParallelRenderingEnabled(False)
 
         self.setLayers([
             self.incidents_layer,
-            self.admin_layer,     
+            # self.admin_layer,     
             self.elevation_layer 
         ])
 
@@ -61,6 +62,8 @@ class HorrorCanvas(QgsMapCanvas):
     def start(self):
         pass
 
+    def panAction (self, event):
+        pass
 
     def _update(self):
         self.t0 = time.time()
@@ -167,7 +170,6 @@ class MapCanvasInspector(HorrorCanvas):
             if(self.magnificationFactor()  != 10.5):
                 self.setMagnificationFactor(10.5)
                 self.incidents_layer.setLabelsEnabled(True)
-
             else:
                 if(t - self.last_state_change >= self.fit_data_time):
                     self.set_mode("focus-idle")
@@ -175,8 +177,6 @@ class MapCanvasInspector(HorrorCanvas):
             return True
 
         elif mode == "focus-idle":
-
-
             if(t - self.last_state_change < self.focus_idle_time):
                 if(self.magnificationFactor()  != 300.5):
                     self.setMagnificationFactor(300.5)
