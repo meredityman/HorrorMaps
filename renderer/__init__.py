@@ -1,1 +1,2 @@
-from .renderer import *
+from .inspector import MapCanvasInspector
+from .interactive import MapCanvasInteractive

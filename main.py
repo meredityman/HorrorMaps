@@ -28,7 +28,7 @@ def main():
     display0.show()
 
 
-    # display1 = MapCanvasInspector("display1", project)
+    # display1 = MapCanvasInteractive("display1", project)
     # display1.setGeometry(0, 0, 1920, 1024)
     # display1.show()
 
