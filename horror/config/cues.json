@@ -1,0 +1,37 @@
+{
+    "cues" : [
+        "morse-switch-on",
+        "morse-switch-off",   
+        "morse-message-begin",
+        "morse-message-end",
+        "map-idle",
+        "map-moving-to-point",
+        "map-fit-data",
+        "map-focus-idle",
+        "map-moving-to-idle"
+    ],
+    "targets": {
+        "target-sound": {
+            "ip"   : "192.168.0.193",
+            "cues" : {
+                "morse-switch-on"     : { "port" : 2871, "addr" : "/switch" , "data" : [1] } ,
+                "morse-switch-off"    : { "port" : 2871, "addr" : "/switch" , "data" : [0] },
+                "morse-message-begin" : { "port" : 2871, "addr" : "/message", "data" : [1] },
+                "morse-message-end"   : { "port" : 2871, "addr" : "/message", "data" : [0] },
+
+                "map-idle"            : {},
+                "map-moving-to-point" : { "port" : 2872, "addr" : "/mapChange", "data" : [1]},
+                "map-fit-data"        : {},
+                "map-focus-idle"      : {},
+                "map-moving-to-idle"  : {"port" : 2872, "addr" : "/mapChange", "data" : [0]}
+            }
+        },
+        "target-lights" : {
+            "ip"   : "192.168.0.111",
+            "cues" : {
+                "morse-switch-on"  : { "port" : 8000, "addr" : "/cobalt/playback/goto", "data" : [1.0] },
+                "morse-switch-off" : { "port" : 8000, "addr" : "/cobalt/playback/goto", "data" : [2.0] }
+            }   
+        }
+    }
+}

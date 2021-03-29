@@ -29,7 +29,7 @@ class HorrorCanvas(QgsMapCanvas):
 
         self.project = project
 
-        self.setLayers(name)
+        self.setLayersFromGroup(name)
         
         self.setMagnificationFactor(1.0)
         self.enableAntiAliasing(True)
@@ -42,7 +42,7 @@ class HorrorCanvas(QgsMapCanvas):
         self.start()
         self.mapCanvasRefreshed.connect(self._update) 
 
-    def setLayers(self, group):
+    def setLayersFromGroup(self, group):
 
         for child in self.project.layerTreeRoot().children():
             if isinstance(child, QgsLayerTreeGroup):
@@ -50,49 +50,8 @@ class HorrorCanvas(QgsMapCanvas):
                     print(f"Found Layers {group}")
                     self.layers = [c.layer() for c in child.findLayers()]
 
-                    print(self.layers)
                     self.setLayers(self.layers)
-
-                    self.mapExtents = self.layers[0].extent()
-                    print(self.mapExtents)
-                    self.setExtent(self.mapExtents) 
-
-# QgsMapCanvas.__init__(self)
-# self.t1 = 0
-# self.t0 = 0
-# self.name = name
-
-# self.project = project
-
-# self.incidents_layer = project.mapLayersByName(INCIDENTS_LAYER)[0]
-# self.incidents_layer.setLabelsEnabled(False)
-
-# self.admin_layer     = project.mapLayersByName(ADMIN_LAYER)[0]
-# self.elevation_layer = project.mapLayersByName(ELEVATION_LAYER)[0]
-
-# self.setMagnificationFactor(1.3)
-
-# self.enableAntiAliasing(True)
-# self.setCanvasColor(Qt.black)
-# self.setScaleLocked(False)
-# self.setParallelRenderingEnabled(False)
-
-# self.setLayers([
-#     self.incidents_layer,
-#     # self.admin_layer,     
-#     self.elevation_layer 
-# ])
-
-# 
-
-
-# self.setExtent(self.mapExtents) 
-# self.fullScale = self.scale()
-
-# self.start()
-# self.mapCanvasRefreshed.connect(self._update) 
-
-
+                    
     def start(self):
         pass
 

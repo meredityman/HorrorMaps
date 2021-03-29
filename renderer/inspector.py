@@ -1,10 +1,10 @@
 from .renderer import *
 
-
-
 from qgis.PyQt.QtCore import *
 from qgis.core import *
 from qgis.gui import *
+
+from horror import send_cue
 
 class MapCanvasInspector(HorrorCanvas):
 
@@ -32,18 +32,23 @@ class MapCanvasInspector(HorrorCanvas):
     def panAction (self, event):
         #print(event)
         pass
-
              
 
     def start(self):
-        self.incidents_layer = self.project.mapLayersByName(INCIDENTS_LAYER)[0]
-        self.incidents_layer.setLabelsEnabled(False)
 
+        for layer in self.layers:
+            if layer.name() == INCIDENTS_LAYER:
+                self.incidents_layer = layer
+                self.incidents_layer.setLabelsEnabled(False)
+                self.mapExtents = self.layers[0].extent()
+                break
+        self.setExtent(self.mapExtents) 
         self.set_mode("idle")
 
     def set_mode(self, mode):
         self.last_state_change = time.time()
         self.mode = mode
+        send_cue(f"map-{self.mode}")
         print(f"Changed mode to {self.mode}")
 
     def set_pio(self, point):

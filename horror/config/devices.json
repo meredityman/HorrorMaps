@@ -1,0 +1,20 @@
+{
+    "laptop01" : {
+        "ip" :"192.168.0.xxx"
+    },
+    "laptop01" : {
+        "ip" :"192.168.0.xxx"
+    },
+    "laptop01" : {
+        "ip" :"192.168.0.xxx"
+    },
+    "map-machine" : {
+        "ip" :"192.168.0.xxx"
+    },
+    "light-machine" : {
+        "ip" :"192.168.0.xxx"
+    },
+    "sound-machine" : {
+        "ip" :"192.168.0.xxx"
+    }
+}
