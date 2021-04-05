@@ -63,11 +63,11 @@ class MapCanvasInspector(HorrorCanvas):
         self.fid = fid
         self.pio = point
 
-        props = self.incidents_layer.labeling().settings()
-        #expr  =f'"fid"={int(fid)}'
-        expr  = f'"id"=100'
-        print(expr)
-        props.setDataDefinedProperty( QgsPalLayerSettings.Show, QgsProperty.fromExpression(expr))
+        # props = self.incidents_layer.labeling().settings()
+        # #expr  =f'"fid"={int(fid)}'
+        # expr  = f'"id"=100'
+        # print(expr)
+        # props.setDataDefinedProperty( QgsPalLayerSettings.Show, QgsProperty.fromExpression(expr))
 
 
         self.set_mode("moving-to-point")
