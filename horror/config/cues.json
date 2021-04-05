@@ -19,11 +19,13 @@
                 "morse-message-begin" : { "port" : 2871, "addr" : "/message", "data" : [1] },
                 "morse-message-end"   : { "port" : 2871, "addr" : "/message", "data" : [0] },
 
-                "map-idle"            : {},
+                "map-idle"            : { "port" : 2872, "addr" : "/mapChange", "data" : [1]},
                 "map-moving-to-point" : { "port" : 2872, "addr" : "/mapChange", "data" : [1]},
-                "map-fit-data"        : {},
-                "map-focus-idle"      : {},
-                "map-moving-to-idle"  : {"port" : 2872, "addr" : "/mapChange", "data" : [0]}
+                "map-fit-data"        : { "port" : 2872, "addr" : "/mapChange", "data" : [1]},
+                "map-focus-idle"      : { "port" : 2872, "addr" : "/mapChange", "data" : [1]},
+                "map-moving-to-idle"  : { "port" : 2872, "addr" : "/mapChange", "data" : [1]}, 
+
+                "map-decision"        : {"port" : 2873, "addr" : "/mapDecision" }
             }
         },
         "target-lights" : {

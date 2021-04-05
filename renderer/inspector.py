@@ -8,6 +8,8 @@ from horror import send_cue
 
 class MapCanvasInspector(HorrorCanvas):
 
+
+
     max_scale_factor     = 20.0
     idle_time            = 15.0
     focus_idle_time      = 7.0
@@ -45,19 +47,29 @@ class MapCanvasInspector(HorrorCanvas):
         self.setExtent(self.mapExtents) 
         self.set_mode("idle")
 
+
+
     def set_mode(self, mode):
         self.last_state_change = time.time()
         self.mode = mode
         send_cue(f"map-{self.mode}")
         print(f"Changed mode to {self.mode}")
 
-    def set_pio(self, point):
+    def set_pio(self, point, fid):
         mode = self.mode
         if mode != "idle":
             print(f"Can only set point in idle mode. Mode is {mode}")
             return
-
+        self.fid = fid
         self.pio = point
+
+        props = self.incidents_layer.labeling().settings()
+        #expr  =f'"fid"={int(fid)}'
+        expr  = f'"id"=100'
+        print(expr)
+        props.setDataDefinedProperty( QgsPalLayerSettings.Show, QgsProperty.fromExpression(expr))
+
+
         self.set_mode("moving-to-point")
 
     def get_random_poi(self):
@@ -67,8 +79,7 @@ class MapCanvasInspector(HorrorCanvas):
                 break
 
         point = QgsPointXY(QgsGeometry.asPoint(feature.geometry()))
-
-        self.set_pio(point)
+        self.set_pio(point, feature.attributes()[0])
 
 
     def pan_to(self, point):

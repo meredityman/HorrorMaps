@@ -12,6 +12,11 @@ class MapCanvasInteractive(HorrorCanvas):
         self.mapExtents = self.layers[0].extent()
         self.setExtent(self.mapExtents) 
 
+        w = QgsFieldValuesLineEdit()
+        w.setLayer(self.incidents_layer)
+        w.setAttributeIndex(0) # or 1, 2,.. depending on which field you want to show
+        w.show()
+
     def update(self):
         pass
         
