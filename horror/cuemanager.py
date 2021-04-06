@@ -35,6 +35,7 @@ def send_cue(req_cue):
 
             if (ip, port) not in osc_channels:
                 client_uuid = str(uuid.uuid4())
+                osc_channels[(ip, port)] = client_uuid
                 osc_udp_client(ip, port, client_uuid)
             else:
                 client_uuid = osc_channels[(ip, port)]
