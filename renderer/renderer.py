@@ -5,6 +5,9 @@ import random
 import numpy as np
 
 from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+
 from qgis.core import *
 from qgis.gui import *
 
@@ -30,7 +33,7 @@ class HorrorCanvas(QgsMapCanvas):
         self.project = project
 
         self.setLayersFromGroup(name)
-        
+        self.setAnnotationsVisible(True) 	
         self.setMagnificationFactor(1.0)
         self.enableAntiAliasing(True)
         self.setCanvasColor(Qt.black)
@@ -41,6 +44,8 @@ class HorrorCanvas(QgsMapCanvas):
 
         self.start()
         self.mapCanvasRefreshed.connect(self._update) 
+
+
 
     def setLayersFromGroup(self, group):
 

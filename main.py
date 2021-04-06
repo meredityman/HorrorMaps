@@ -31,7 +31,7 @@ def main():
 
     display1 = MapCanvasInteractive("display1", project)
     display1.show()
-    display1.setGeometry(screens[1].geometry().x(), screens[1].geometry().y(), 1920, 1024)
+    display1.setGeometry(screens[-1].geometry().x(), screens[1].geometry().y(), 1920, 1024)
     display1.setFrameShape(QFrame.NoFrame)
     display1.showFullScreen()
 

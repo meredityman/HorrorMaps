@@ -1,6 +1,8 @@
 from .renderer import *
 
 from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
 from qgis.core import *
 from qgis.gui import *
 
@@ -8,7 +10,7 @@ from horror import send_cue
 
 class MapCanvasInspector(HorrorCanvas):
 
-
+    wpm = 179
 
     max_scale_factor     = 20.0
     idle_time            = 15.0
@@ -41,7 +43,7 @@ class MapCanvasInspector(HorrorCanvas):
         for layer in self.layers:
             if layer.name() == INCIDENTS_LAYER:
                 self.incidents_layer = layer
-                self.incidents_layer.setLabelsEnabled(False)
+                # self.incidents_layer.setLabelsEnabled(False)
                 self.mapExtents = self.layers[0].extent()
                 break
         self.setExtent(self.mapExtents) 
@@ -54,12 +56,50 @@ class MapCanvasInspector(HorrorCanvas):
         self.mode = mode
 
         if mode == "idle":
-            self.idle_time = random.randint(20, 40)
+            self.idle_time = random.randint(4, 5)
         elif mode == "focus-idle" :
-            focus_idle_time = random.randint(20, 40)
+            self.focus_idle_time = (self.wc / self.wpm) * 60
+            print(self.focus_idle_time)
+            self.annot.setVisible(True)
+        elif mode == "moving-to-idle":
+            self.annot.setVisible(False)
+
 
         send_cue(f"map-{self.mode}")
         print(f"Changed mode to {self.mode}")
+
+    def updateAnnotation(self):
+        self.annot = QgsTextAnnotation()
+        self.annot.setVisible(False)
+        self.annot.setHasFixedMapPosition(False)
+
+        text = f"<body><h2>{self.city} - {self.date.toString('dd-MM-yyyy')}</h2><p>{self.description}<p></body>"
+        document = QTextDocument()
+        document.setDefaultStyleSheet("""
+        body { color : white; font-size: 20px; font-family: "Liberation Serif",  serif;}
+        h2   { text-align: left; }
+        """)
+        
+        document.setHtml(text)
+        document.setTextWidth(self.width() * 0.6)
+        size = document.size()
+
+        self.annot.setDocument(document)
+        self.annot.setMapPosition(self.pio)
+
+
+        #self.annot.setContentsMargin(QgsMargins(3, 3, 3, 3) )
+        self.annot.setFrameSize(size)
+        self.annot.setMapLayer(self.incidents_layer)	
+        self.annot.setRelativePosition(
+            QPointF(
+                0.5 - 0.5 * (size.width() / self.width()), 
+                0.5 - 0.5 * (size.height() / self.height()), 
+            ))
+
+        symbol = QgsFillSymbol()
+        symbol.setColor(QColor(0, 0, 0, 179))
+        self.annot.setFillSymbol(symbol)
 
     def set_pio(self, feature):
         mode = self.mode
@@ -70,14 +110,13 @@ class MapCanvasInspector(HorrorCanvas):
         self.pio = QgsPointXY(QgsGeometry.asPoint(feature.geometry()))
 
         self.fid = feature.attributes()[0]
+        self.description = feature.attributes()[2]
+        self.date        = feature.attributes()[3]
+        self.city        = feature.attributes()[6]
+        self.wc = len(self.description.split(" "))
 
-        # props = self.incidents_layer.labeling().settings()
-        # #expr  =f'"fid"={int(fid)}'
-        # expr  = f'"id"=100'
-        # print(expr)
-        # props.setDataDefinedProperty( QgsPalLayerSettings.Show, QgsProperty.fromExpression(expr))
-
-
+        self.updateAnnotation()
+        self.annotItem = QgsMapCanvasAnnotationItem(self.annot, self)
         self.set_mode("moving-to-point")
 
     def get_random_poi(self):
@@ -128,7 +167,7 @@ class MapCanvasInspector(HorrorCanvas):
         elif mode == "fit-data":
             if(self.magnificationFactor()  != 10.5):
                 self.setMagnificationFactor(10.5)
-                self.incidents_layer.setLabelsEnabled(True)
+                #self.incidents_layer.setLabelsEnabled(True)
             else:
                 if(t - self.last_state_change >= self.fit_data_time):
                     self.set_mode("focus-idle")
@@ -139,7 +178,7 @@ class MapCanvasInspector(HorrorCanvas):
             if(t - self.last_state_change < self.focus_idle_time):
                 if(self.magnificationFactor()  != 300.5):
                     self.setMagnificationFactor(300.5)
-                    self.incidents_layer.setLabelsEnabled(True)
+                    # self.incidents_layer.setLabelsEnabled(True)
                     return True
                 else:
                     return False
@@ -149,7 +188,7 @@ class MapCanvasInspector(HorrorCanvas):
 
 
         elif mode == "moving-to-idle":
-            self.incidents_layer.setLabelsEnabled(False)
+            # self.incidents_layer.setLabelsEnabled(False)
             self.setMagnificationFactor(2.5)
 
             if self.pan_to(self.mapExtents.center()):

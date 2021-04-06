@@ -10,7 +10,14 @@ from . import cue_sheet
 osc_channels = {}
 osc_startup()
 
+disable = False
+
 def send_cue(req_cue):
+    if(disable):
+        print(f"Cues disabled {req_cue}")
+        return
+
+
     if req_cue not in cue_sheet["cues"]:
         print(f"Cue '{req_cue}' not found.")
 
