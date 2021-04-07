@@ -76,7 +76,7 @@ class MapCanvasInspector(HorrorCanvas):
         text = f"<body><h2>{self.city} - {self.date.toString('dd-MM-yyyy')}</h2><p>{self.description}<p></body>"
         document = QTextDocument()
         document.setDefaultStyleSheet("""
-        body { color : white; font-size: 20px; font-family: "Liberation Serif",  serif;}
+        body { color : white; font-size: 24px; font-family: "Liberation Serif",  serif;}
         h2   { text-align: left; }
         """)
         
