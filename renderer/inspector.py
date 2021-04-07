@@ -10,7 +10,7 @@ from horror import send_cue
 
 class MapCanvasInspector(HorrorCanvas):
 
-    wpm = 179
+    wpm = 90
 
     max_scale_factor     = 20.0
     idle_time            = 15.0
